@@ -13,6 +13,7 @@
 
 #include <cstdlib>
 #include <iostream>
+#include <utility>
 #include <vector>
 #include <string.h>
 #include <fstream>
@@ -25,6 +26,9 @@ using namespace std;
 struct jobInfo {
     int id = -1;
     thread job = thread();
+
+    jobInfo() {
+    };
 };
 
 struct info {
@@ -33,98 +37,106 @@ struct info {
     vector<int>lineOfOccurence;
 };
 
-void removeDuplicateOccurences (vector<int>* tmp){
-    sort(tmp->begin(), tmp->end());
-    tmp->erase(unique(tmp->begin(), tmp->end()), tmp->end());
+vector<int> removeDuplicateOccurences(vector<int> tmp) {
+    sort(tmp.begin(), tmp.end());
+    tmp.erase(unique(tmp.begin(), tmp.end()), tmp.end());
+    return tmp;
 }
 
-void printId(jobInfo* first){
-    cout << "ID of the Thread is fuck yo mom: " <<  first->id << endl;
+void printId(jobInfo* first) {
+    cout << "ID of the Thread is fuck yo mom: " << first->id << endl;
 }
 
 void print(map<string, info> wordCount) {
     info tmp;
-    map<string, info>::iterator it;
 
-    for (it = wordCount.begin(); it != wordCount.end(); ++it) {
+    for (auto it = wordCount.begin(); it != wordCount.end(); ++it) {
+        tmp.lineOfOccurence = removeDuplicateOccurences(tmp.lineOfOccurence);
         tmp = it->second;
-        int tmpint = tmp.numberOfOccurences;
-        cout << endl << tmp.word << ": " << tmp.numberOfOccurences << "\t Occured at: ";
-        
-        removeDuplicateOccurences (&tmp.lineOfOccurence);
-            
-        
-        vector<int>::iterator vecIt;
-        for (vecIt = tmp.lineOfOccurence.begin(); vecIt != tmp.lineOfOccurence.end(); ++vecIt) {
-            cout << "( " << *vecIt << " ) ";
+        cout << endl << it->first << ": " << tmp.numberOfOccurences << "\t Occured at: ";
+        for (auto vecIt = tmp.lineOfOccurence.begin(); vecIt != tmp.lineOfOccurence.end(); ++vecIt) {
+            cout << "(" << *vecIt << ") ";
         }
     }
-
+    cout << endl <<"I terminate correctly " << endl;
 }
 
-/*map<string, info>*/ void fuck(ifstream& file/*, int numberOfThreads, int threadId*/) {
+void counterino(string filePath, int numberOfThreads,
+        int threadId, map<string, info>* input) {
+    
     string word;
     info tmp;
-    int count;
-    int line = 1;
-    //bla bla bla bla
-
-    map<string, info> input;
-
+    int line = 0;
+    ifstream file;
+    file.open(filePath);
+    
     while (file >> word) {
-        if (file.peek() == '\n')
+        //cout << word << "   " << threadId << endl;
+        if (file.peek() == '\n'){
             line++;
-        //if(line % numberOfThreads == thread.id){
+        }
+        tmp = input->operator[](word);
+        tmp.word = word;
+        tmp.numberOfOccurences += 1;
 
-            tmp = input[word];
-            tmp.word = word;
-            tmp.numberOfOccurences += 1;
+        tmp.lineOfOccurence.push_back(line);
 
-            tmp.lineOfOccurence.push_back(line);
-
-            input[word] = tmp;
-        //}
+        input->operator[](word) = tmp;
     }
-    //return input;
+    
+    if(threadId == 0){
+        //cout << "Hi" << endl;
+        for (auto it = input->end(); it != input->end(); ++it ){
+            cout << endl << it->first << " : " << it->second.numberOfOccurences << endl;
+        }
+    }
+    file.close();
 }
 
 int main(int argc, char** argv) {
     char *p;
     int conv = strtol(argv[1], &p, 10);
     string filePath(argv[2]);
-    ifstream file;
-    file.open(filePath);
-    
+    map<string, info> empty;
+    vector<map<string, info>> input;
+    //ifstream file;
+    //file.open(filePath);
+
     vector<jobInfo> jobs;
 
     int numberOfThreads = conv;
-    
     jobInfo tmp;
-    tmp.id = 0;
-    tmp.job = thread (fuck, file/*, numberOfThreads, tmp.id*/);
-    tmp.job.join();
-    //jobs.push_back(tmp);
-    //jobs[0].join();
-    /*for (int i = 0; i < numberOfThreads; i++){
+    for (int i = 0; i < numberOfThreads; i++) {
+        //map<string, info> empty;
+        input.push_back(map<string, info>()) ;
         tmp.id = i;
-        tmp.job = thread (count, file, tmp.id);
-        jobs.push_back(tmp);
-    }*/
-    
-    // THREAD DEBUGGING SHIT YOU CUNT
-    jobInfo yoCunt;
-    yoCunt.id = 1;
-    yoCunt.job = thread(printId,&yoCunt);
-    yoCunt.job.join();
-    
+        tmp.job = thread(counterino, filePath, numberOfThreads, tmp.id, &input[i]);
+        jobs.push_back(std::move(tmp));
+    }
+
+
+    for (int i = 0; i < numberOfThreads; i++) {
+        if (jobs.at(i).job.joinable())
+            jobs.at(i).job.join();
+    }
     cout << "Number Of threads: " << numberOfThreads << endl;
     cout << "Filepath: " << filePath << endl;
+    map<string, info> check = input[0];
     
-    //map<string, info> result = jobs[0].job.join();
-    file.close();
-    
-    //print(result);
-    
+    print(check);
+
     return 0;
 }
 
+
+
+// THREAD DEBUGGING SHIT YOU CUNT
+/* jobInfo yoCunt;
+ yoCunt.id = 1;
+ yoCunt.job = thread(printId,&yoCunt);
+ yoCunt.job.join();
+ * 
+ * 
+ * 
+   
+ */
