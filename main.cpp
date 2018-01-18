@@ -173,7 +173,7 @@ int main(int argc, char** argv) {
     std::chrono::system_clock::time_point endTime = std::chrono::system_clock::now();
     std::chrono::microseconds microRunTime = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime);
     double runTime = microRunTime.count() / 1000000.0;
-    std::cout << "Wall clock time = " << runTime << " seconds." << std::endl << std::flush;
+    std::cout << endl <<"Wall clock time = " << runTime << " seconds." << std::endl << std::flush;
 
     return 0;
 }
