@@ -47,10 +47,6 @@ vector<unsigned int> removeDuplicateOccurences(vector<unsigned int> tmp) {
     return tmp;
 }
 
-void printId(jobInfo* first) {
-    cout << "ID of the Thread is fuck yo mom: " << first->id << endl;
-}
-
 void print(map<string, info> wordCount) {
     info tmp;
 
@@ -64,7 +60,6 @@ void print(map<string, info> wordCount) {
         }
         cout << ") ";
     }
-    cout << endl << "I terminate correctly " << endl;
 }
 
 void counterino(unsigned numberOfThreads,
@@ -162,9 +157,6 @@ int main(int argc, char** argv) {
 
         tmp.job = thread(counterino, numberOfThreads, tmp.id, &result.at(j), textPart);
 
-        cout << "Größe vom ergebniss Vektor: " << result.size() << endl;
-        cout << "Größe von ergebniss Map: " << result.at(j).size() << endl;
-
         jobs.push_back(move(tmp));
     }
 
@@ -174,9 +166,8 @@ int main(int argc, char** argv) {
             jobs.at(i).job.join();
     }
 
-    cout << "Number Of threads: " << numberOfThreads << endl;
     cout << "Filepath: " << filePath << endl;
-    cout << "Vector size " << result.size() << endl;
+    cout << "Number Of threads: " << numberOfThreads << endl;
     print(mapReduce(result));
 
     std::chrono::system_clock::time_point endTime = std::chrono::system_clock::now();
